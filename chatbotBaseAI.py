@@ -1,6 +1,8 @@
+import os
 from openai import AzureOpenAI
 client = AzureOpenAI(
-    api_key="42c19dfbd58e4959b004e61187ae9a8e",
+    # api_key="YOUR_API_KEY", # 開発用
+    api_key=os.environ.get("AZURE_API_KEY"), # 本番用
     api_version="2023-03-15-preview",
     azure_endpoint="https://basegpt4turbov.openai.azure.com/"
 )
