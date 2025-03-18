@@ -3,8 +3,12 @@ import os
 import secrets
 from datetime import timedelta
 
-basedir = os.path.abspath(os.path.dirname(__file__))  # backendフォルダの絶対パス
+basedir = os.path.abspath(os.path.dirname(__file__))
 database_path = os.path.join(basedir, 'instance', 'database.db')
+
+# Ensure the 'instance' folder exists
+if not os.path.exists(os.path.join(basedir, 'instance')):
+    os.makedirs(os.path.join(basedir, 'instance'))
 
 # JWT_SECRET_KEY を固定値に設定
 JWT_SECRET_KEY = 'bisdom20252HBXXXWGFIRSTTRIAL'
