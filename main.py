@@ -24,7 +24,8 @@ def create_app(config_name):
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
-    app.run(debug=True, port=8080)
+    # app.run(debug=True, port=8080) # 開発用
+        app.run(host="0.0.0.0", port=8000)  # 本番用
     chatbotBaseAI.start_chat()
 
 # デバッグモードTrueにすると変更が即反映される
