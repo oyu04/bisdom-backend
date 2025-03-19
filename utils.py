@@ -8,6 +8,9 @@ from common_decorator import transactional
 from common_type import Model 
 from collections import defaultdict
 import uuid
+import os
+from os import path
+from database import upload_db_to_blob  # Blobへのアップロード関数のインポート
 
 def get_all_users() -> list[Users]:
     return Users.query.all()
@@ -44,30 +47,28 @@ def create_default_insert_data(model: Model) -> dict[str, str | None]:
 
 @transactional
 def update_knowledge(data: dict[str, str|int|None]) -> Tuple[dict[str, str|Model], int]:
-    # 必須パラメータのチェック
+    # 必須パラメータのチェックなど（省略）
     if "id" not in data:
         return {"message": ErrorMessages.ERROR_ID_005E}, 99
-    
+
     knowledge: Knowledge = get_knowledge_by_id(data["id"])
     if not knowledge:
         return {"message": ErrorMessages.ERROR_ID_003E}, 99
-    
+
     if "contents" not in data:
         return {"message": ErrorMessages.ERROR_ID_009E}, 99
-    
+
     if "title" not in data or len(data["title"]) < 1:
         return {"message": ErrorMessages.ERROR_ID_008E}, 99
-    
+
     if "author_id" not in data or len(data["author_id"]) < 1:
         return {"message": ErrorMessages.ERROR_ID_007E}, 99
 
     # 更新対象外のフィールド
     except_list = ["id", "content", "update_by"]
-    
-    # 更新可能なフィールドを取得
-    updatable_fields = [attr for attr in dir(knowledge) 
-                       if not attr.startswith('_') and 
-                       attr not in except_list]
+    updatable_fields = [attr for attr in dir(knowledge)
+                        if not attr.startswith('_') and 
+                        attr not in except_list]
 
     # データを更新
     for k, v in data.items():
@@ -84,10 +85,22 @@ def update_knowledge(data: dict[str, str|int|None]) -> Tuple[dict[str, str|Model
     knowledge.update_at = datetime.now()
     knowledge.update_by = data["author_id"]
 
-    return {
+    # コミット後にDBファイルのアップロードを実施
+    ret = {
         "message": "ナレッジ内容更新が成功しました",
         "knowledge_id": knowledge.id
-    }, 0
+    }
+    exit_code = 0
+    
+    # DBの更新が成功したならアップロード処理を呼び出す
+    try:
+        local_db_path = path.join(os.getcwd(), 'instance/database.db')
+        upload_db_to_blob(local_db_path)
+    except Exception as e:
+        # アップロードに失敗してもDB更新自体は成功しているのでログ出力するだけにする
+        print(f"DB更新後のBlobアップロードに失敗しました: {e}")
+
+    return ret, exit_code
     
 @transactional
 def add_new_knowledge(data:dict[str,str|int|None]) -> Tuple[dict[str,str|Model],int]:
@@ -132,8 +145,23 @@ def add_new_knowledge(data:dict[str,str|int|None]) -> Tuple[dict[str,str|Model],
         # Knowledgeオブジェクトを作成し、データベースに追加
         k = Knowledge(**insert_data)
         db.session.add(k)
+
+        # コミット後にDBファイルのアップロードを実施
+        ret = {
+            "message": "ナレッジ内容更新が成功しました",
+            "knowledge_id": k.id
+        }
+        exit_code = 0
         
-        return {"message":"登録完了した","knowledge_id":k.id},0
+        # DBの更新が成功したならアップロード処理を呼び出す
+        try:
+            local_db_path = path.join(os.getcwd(), 'instance/database.db')
+            upload_db_to_blob(local_db_path)
+        except Exception as e:
+            # アップロードに失敗してもDB更新自体は成功しているのでログ出力するだけにする
+            print(f"DB更新後のBlobアップロードに失敗しました: {e}")
+
+        return ret, exit_code
     except Exception as e:
         return {"message":f"ナレッジの登録中にエラーが発生しました、エラーメッセージ:{e}"},99
 def sanitize_quill_html(content:str|None) -> Tuple[str,int]:

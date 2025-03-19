@@ -2,6 +2,7 @@ from flask import Flask
 from init import app, db
 import chatbotBaseAI
 import api
+from database import db_connect
 
 def create_app(config_name):
     app = Flask(__name__)
@@ -13,7 +14,8 @@ def create_app(config_name):
         app.config.from_object('config.DevelopmentConfig')
 
     # 拡張機能の初期化
-    db.init_app(app)
+    # db.init_app(app)
+    db_connect(app)
     # 他の拡張機能の初期化もここに追加
 
     # ブループリントの登録
@@ -23,9 +25,9 @@ def create_app(config_name):
 
 if __name__ == '__main__':
     with app.app_context():
-        db.create_all()
-    # app.run(debug=True, port=8080) # 開発用
-        app.run(host="0.0.0.0", port=8000)  # 本番用
+        # db.create_all()
+        db_connect(app)
+    app.run(host="0.0.0.0", port=8000)
     chatbotBaseAI.start_chat()
 
 # デバッグモードTrueにすると変更が即反映される

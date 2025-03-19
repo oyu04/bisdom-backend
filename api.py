@@ -15,9 +15,6 @@ import messages
 from chatbotBaseAI import chat_with_openai, conversation
 from model.models import db, Users, Group, Knowledge, Like
 
-with app.app_context():
-    db.create_all()
-
 @jwt.unauthorized_loader
 def custom_unauthorized_error(error):
     return jsonify({
