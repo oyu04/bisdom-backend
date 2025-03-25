@@ -21,13 +21,11 @@ MAX_TOKENS = 15000
 MODEL_NAME = "gpt-4o-mini"
 TEMPERATURE = 0.4 #randomness of the output
 
-# Set up OpenAI API key
-"""OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
-if not OPENAI_API_KEY:
-    OPENAI_API_KEY = input("Please enter your OpenAI API key: ")
-    os.environ["OPENAI_API_KEY"] = OPENAI_API_KEY
-"""
-OPENAI_API_KEY = "42c19dfbd58e4959b004e61187ae9a8e"  # Azure Portalから取得したAPIキーを入力
+# Set up Azure OpenAI API key
+AZURE_API_KEY = os.environ.get("AZURE_API_KEY")
+if not AZURE_API_KEY:
+    AZURE_API_KEY = input("Please enter your OpenAI API key: ")
+    os.environ["AZURE_API_KEY"] = AZURE_API_KEY
 
 def scrape_website(url):
     headers = {
